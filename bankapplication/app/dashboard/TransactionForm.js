@@ -4,6 +4,7 @@ const TransactionForm = ({
   onSubmit,
   buttonLabel,
   message,
+  error,
 }) => (
   <div className=" p-4 bg-gray-100 rounded shadow-lg max-w-md mx-auto mt-10">
     <input
@@ -24,7 +25,11 @@ const TransactionForm = ({
     >
       {buttonLabel}
     </button>
-    {message && <p className="mb-6 text-blue-600">{message}</p>}
+    {message && (
+      <p className={`mb-6 ${error ? "text-red-600" : "text-green-600"}`}>
+        {message}
+      </p>
+    )}
   </div>
 );
 

@@ -30,8 +30,8 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await login(username, password); // Attempt to log in
-      router.push("/dashboard"); // Redirect to the dashboard after successful login
+      await login(username, password);
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login failed:", error);
       alert("Invalid credentials");

@@ -31,7 +31,7 @@ namespace BankAppWebAPI.Controllers
             if (user is not null)
                 return Ok(user.Balance); // Return the user's current balance
 
-            return Unauthorized();
+            return Unauthorized("You are not authorized to access this resource.");
         }
 
         [HttpPost("deposit"), Authorize]
@@ -57,7 +57,7 @@ namespace BankAppWebAPI.Controllers
                 return Ok("Deposit Successful");
             }
 
-            return Unauthorized(new { message = "You are not authorized to access this resource." });
+            return Unauthorized("You are not authorized to access this resource.");
         }
 
         [HttpPost("withdraw"), Authorize]
@@ -85,7 +85,7 @@ namespace BankAppWebAPI.Controllers
 
                 return Ok("Withdraw Successful");
             }
-            return Unauthorized(new { message = "You are not authorized to access this resource." });
+            return Unauthorized("You are not authorized to access this resource.");
         }
 
         [HttpPost("transfer"), Authorize]
@@ -101,6 +101,8 @@ namespace BankAppWebAPI.Controllers
                     return BadRequest("Insufficient funds"); // Check if the sender has enough balance
                 if(recipient is null)
                     return BadRequest("Recipient not found"); // Check if the recipient exists
+                if (sender.Username == recipient.Username)
+                    return BadRequest("You cannot transfer to yourself"); // Check if the sender is trying to transfer to themselves
 
                 sender.Balance -= transactionVM.Amount; // Deduct amount from sender
                 recipient.Balance += transactionVM.Amount; // Add amount to receiver
@@ -129,7 +131,7 @@ namespace BankAppWebAPI.Controllers
                 _context.SaveChanges(); // Save changes to the database
                 return Ok("Transfer Successful");
             }
-            return Unauthorized(new { message = "You are not authorized to access this resource." });
+            return Unauthorized("You are not authorized to access this resource.");
         }
 
         [HttpGet("history"), Authorize]
@@ -145,8 +147,7 @@ namespace BankAppWebAPI.Controllers
                 .ToList(); // Retrieve the transaction history for the user
                 return Ok(transactions); // Return transaction history
             }
-            return Unauthorized();
-
+            return Unauthorized("You are not authorized to access this resource.");
         }
     }
 }

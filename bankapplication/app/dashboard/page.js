@@ -22,9 +22,10 @@ const Dashboard = () => {
   const [formType, setFormType] = useState(null);
   const [recipientUsername, setRecipientUsername] = useState("");
   const [username, setUsername] = useState("");
+  const [error, setError] = useState(false);
   const router = useRouter();
   useEffect(() => {
-    // Check for existing token in localStorage
+    // Check token in localStorage
     const token = localStorage.getItem("token");
     // check token expiration
     if (token) {
@@ -38,12 +39,18 @@ const Dashboard = () => {
         router.replace("/login"); // Redirect to login if token is expired
       } else {
         const fetchInitialData = async () => {
-          const [balanceData, history] = await Promise.all([
-            getBalance(),
-            getTransactionHistory(),
-          ]);
-          setBalance(balanceData);
-          setTransactions(history);
+          const balanceResponse = await getBalance();
+          if (balanceResponse.success) {
+            setBalance(balanceResponse.data);
+          } else {
+            alert(`${response.message || "An error occurred."}`);
+          }
+          const historyResponse = await getTransactionHistory();
+          if (historyResponse.success) {
+            setTransactions(historyResponse.data);
+          } else {
+            alert(`${response.message || "An error occurred."}`);
+          }
         };
         fetchInitialData();
       }
@@ -51,49 +58,63 @@ const Dashboard = () => {
   }, []);
 
   const updateBalanceAndTransactions = useCallback(async () => {
-    const newBalance = await getBalance();
-    const newTransactions = await getTransactionHistory();
-    setBalance(newBalance);
-    setTransactions(newTransactions);
+    const newBalanceResponse = await getBalance();
+    if (newBalanceResponse.success) {
+      setBalance(newBalanceResponse.data);
+    } else {
+      setMessage(`${response.message || "An error occurred."}`);
+    }
+    const newTransactionsResponse = await getTransactionHistory();
+    if (newTransactionsResponse.success) {
+      setTransactions(newTransactionsResponse.data);
+    } else {
+      setMessage(`${response.message || "An error occurred."}`);
+    }
   }, []);
 
   const handleDeposit = async () => {
     if (amount) {
       const response = await deposit(parseFloat(amount));
-      if (response) {
+      if (response.success) {
         setMessage("Deposit successful.");
         updateBalanceAndTransactions();
+        setAmount("");
+        setError(false);
       } else {
-        setMessage("Deposit failed. Please try again.");
+        setMessage(`${response.message || "An error occurred."}`);
+        setError(true);
       }
-      setAmount("");
     }
   };
 
   const handleWithdraw = async () => {
     if (amount) {
       const response = await withdraw(parseFloat(amount));
-      if (response) {
+      if (response.success) {
         setMessage("Withdrawal successful.");
         updateBalanceAndTransactions();
+        setAmount("");
+        setError(false);
       } else {
-        setMessage("Insufficient funds or other error.");
+        setMessage(`${response.message || "An error occurred."}`);
+        setError(true);
       }
-      setAmount("");
     }
   };
 
   const handleTransfer = async () => {
     if (amount && recipientUsername) {
       const response = await transfer(parseFloat(amount), recipientUsername);
-      if (response) {
+      if (response.success) {
         setMessage("Transfer successful.");
         updateBalanceAndTransactions();
+        setAmount("");
+        setRecipientUsername("");
+        setError(false);
       } else {
-        setMessage("Transfer failed. Please try again.");
+        setMessage(`${response.message || "An error occurred."}`);
+        setError(true);
       }
-      setAmount("");
-      setRecipientUsername("");
     }
   };
   const handleLogout = () => {
@@ -167,6 +188,7 @@ const Dashboard = () => {
             onSubmit={handleDeposit}
             buttonLabel="Confirm Deposit"
             message={message}
+            error={error}
           />
         )}
         {/* ------------ */}
@@ -178,6 +200,7 @@ const Dashboard = () => {
             onSubmit={handleWithdraw}
             buttonLabel="Confirm Withdraw"
             message={message}
+            error={error}
           />
         )}
         {/* ------------- */}
@@ -190,6 +213,7 @@ const Dashboard = () => {
             setRecipientUsername={setRecipientUsername}
             onSubmit={handleTransfer}
             message={message}
+            error={error}
           />
         )}
         {/* ---------------- */}
