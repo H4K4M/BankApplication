@@ -11,7 +11,7 @@ This project is a bank application that allows users to deposit, withdraw, and t
 
 ## Setup
 
-1. Run `docker-compose up` from root directory to start the services.
+1. Run `docker-compose up --build` from root directory to start the services.
 
 ## Features
 
